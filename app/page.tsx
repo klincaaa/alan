@@ -1,65 +1,85 @@
-import Image from "next/image";
+"use client"
+import { useState, useEffect } from "react"
 
-export default function Home() {
+export default function HomePage() {
+  const [projects, setProjects] = useState<any[]>([])
+  const [workers, setWorkers] = useState<any[]>([])
+
+  // --- Fetch projekata ---
+  const fetchProjects = async () => {
+    try {
+      const res = await fetch("/api/projects")
+      if (!res.ok) throw new Error("Ne mogu učitati projekte")
+      const data = await res.json()
+      setProjects(data.projects || []) // <-- obavezno uzimamo niz
+    } catch (err) {
+      console.error(err)
+      setProjects([])
+    }
+  }
+
+  // --- Fetch radnika ---
+  const fetchWorkers = async () => {
+    try {
+      const res = await fetch("/api/workers")
+      if (!res.ok) throw new Error("Ne mogu učitati radnike")
+      const data = await res.json()
+      setWorkers(data.workers || []) // <-- ovo je ključno
+    } catch (err) {
+      console.error(err)
+      setWorkers([])
+    }
+  }
+
+  useEffect(() => {
+    fetchProjects()
+    fetchWorkers()
+  }, [])
+
   return (
-    <div className="flex min-h-screen items-center justify-center bg-zinc-50 font-sans dark:bg-black">
-      <main className="flex min-h-screen w-full max-w-3xl flex-col items-center justify-between py-32 px-16 bg-white dark:bg-black sm:items-start">
-        <Image
-          className="dark:invert"
-          src="/next.svg"
-          alt="Next.js logo"
-          width={100}
-          height={20}
-          priority
-        />
-        <div className="flex flex-col items-center gap-6 text-center sm:items-start sm:text-left">
-          <h1 className="max-w-xs text-3xl font-semibold leading-10 tracking-tight text-black dark:text-zinc-50">
-            To get started, edit the page.tsx file.
-          </h1>
-          <p className="max-w-md text-lg leading-8 text-zinc-600 dark:text-zinc-400">
-            Looking for a starting point or more instructions? Head over to{" "}
+    <div className="p-4 max-w-6xl mx-auto space-y-8">
+      {/* Projekti */}
+      <section>
+        <h1 className="text-2xl font-bold mb-4">Projekti</h1>
+        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
+          {Array.isArray(projects) && projects.map(p => (
             <a
-              href="https://vercel.com/templates?framework=next.js&utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-              className="font-medium text-zinc-950 dark:text-zinc-50"
+              key={p.id}
+              href={`/projects/${p.id}`}
+              className="border rounded-lg p-4 shadow hover:shadow-lg transition cursor-pointer bg-white"
             >
-              Templates
-            </a>{" "}
-            or the{" "}
+              <h2 className="font-bold text-lg mb-1">{p.name}</h2>
+              {p.location && <p className="text-sm text-gray-500">{p.location}</p>}
+              {p.start_date && p.end_date && (
+                <p className="text-sm text-gray-400">
+                  {new Date(p.start_date).toLocaleDateString()} - {new Date(p.end_date).toLocaleDateString()}
+                </p>
+              )}
+              {p.budget && <p className="text-sm text-gray-600">Budžet: {p.budget} €</p>}
+              <p className="text-sm font-semibold">Status: {p.status}</p>
+            </a>
+          ))}
+          {(!projects || projects.length === 0) && <p>Nema projekata za prikaz.</p>}
+        </div>
+      </section>
+
+      {/* Radnici */}
+      <section>
+        <h1 className="text-2xl font-bold mb-4">Radnici</h1>
+        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
+          {Array.isArray(workers) && workers.map(w => (
             <a
-              href="https://nextjs.org/learn?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-              className="font-medium text-zinc-950 dark:text-zinc-50"
+              key={w.id}
+              href={`/workers/${w.id}`}
+              className="border rounded-lg p-4 shadow hover:shadow-lg transition cursor-pointer bg-white"
             >
-              Learning
-            </a>{" "}
-            center.
-          </p>
+              <h2 className="font-bold text-lg mb-1">{w.first_name} {w.last_name}</h2>
+              <p className="text-sm text-gray-500">Satnica: {w.hourly_rate} €</p>
+            </a>
+          ))}
+          {(!workers || workers.length === 0) && <p>Nema radnika za prikaz.</p>}
         </div>
-        <div className="flex flex-col gap-4 text-base font-medium sm:flex-row">
-          <a
-            className="flex h-12 w-full items-center justify-center gap-2 rounded-full bg-foreground px-5 text-background transition-colors hover:bg-[#383838] dark:hover:bg-[#ccc] md:w-[158px]"
-            href="https://vercel.com/new?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            <Image
-              className="dark:invert"
-              src="/vercel.svg"
-              alt="Vercel logomark"
-              width={16}
-              height={16}
-            />
-            Deploy Now
-          </a>
-          <a
-            className="flex h-12 w-full items-center justify-center rounded-full border border-solid border-black/[.08] px-5 transition-colors hover:border-transparent hover:bg-black/[.04] dark:border-white/[.145] dark:hover:bg-[#1a1a1a] md:w-[158px]"
-            href="https://nextjs.org/docs?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            Documentation
-          </a>
-        </div>
-      </main>
+      </section>
     </div>
-  );
+  )
 }
