@@ -29,3 +29,4 @@ export async function POST(req: Request) {
     return NextResponse.json({ error: "Greška pri dodavanju radnika" }, { status: 500 })
   }
 }
+

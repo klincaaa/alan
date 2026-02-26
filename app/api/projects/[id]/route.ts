@@ -22,11 +22,10 @@ export async function GET(
 
   // Dohvati sve unose sati za projekat
   const [entries]: any = await db.query(`
-    SELECT we.*, w.first_name, w.last_name
-    FROM work_entries we
-    JOIN workers w ON we.worker_id = w.id
-    WHERE we.project_id = ?
-    ORDER BY we.work_date DESC
+    SELECT we.*, w.first_name, w.last_name, w.hourly_rate
+FROM work_entries we
+JOIN workers w ON we.worker_id = w.id
+WHERE we.project_id = ?
   `, [projectId])
 
   // Dohvati sve aktivne radnike za dropdown

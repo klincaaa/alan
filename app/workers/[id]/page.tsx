@@ -12,6 +12,40 @@ export default function WorkerDetails() {
   const [startDate, setStartDate] = useState<Date | null>(null)
   const [endDate, setEndDate] = useState<Date | null>(null)
 
+  const [isEditing, setIsEditing] = useState(false)
+  const [firstName, setFirstName] = useState("")
+  const [lastName, setLastName] = useState("")
+  const [hourlyRate, setHourlyRate] = useState("")
+
+  useEffect(() => {
+    if (data?.worker) {
+      setFirstName(data.worker.first_name)
+      setLastName(data.worker.last_name)
+      setHourlyRate(data.worker.hourly_rate)
+    }
+  }, [data])
+
+  const handleUpdate = async (e: any) => {
+    e.preventDefault()
+
+    console.log("Updating worker:", id)
+
+    await fetch(`/api/workers/${id}`, {
+      method: "PUT",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        first_name: firstName,
+        last_name: lastName,
+        hourly_rate: parseFloat(hourlyRate)
+      })
+    })
+
+    console.log("Response: works")
+
+    setIsEditing(false)
+    fetchData()
+  }
+
   const fetchData = async () => {
     const res = await fetch(`/api/workers/${id}`)
     const json = await res.json()
@@ -41,10 +75,61 @@ export default function WorkerDetails() {
 
   return (
     <div className="p-4 max-w-md mx-auto">
-      <h1 className="text-xl font-bold mb-2">
-        {data.worker.first_name} {data.worker.last_name}
-      </h1>
-      <p>Satnica: {data.worker.hourly_rate} €</p>
+      <div className="mb-4">
+        {!isEditing ? (
+          <>
+            <h1 className="text-xl font-bold">
+              {data.worker.first_name} {data.worker.last_name}
+            </h1>
+            <p>Satnica: {data.worker.hourly_rate} €</p>
+
+            <button
+              onClick={() => setIsEditing(true)}
+              className="mt-2 px-3 py-1 text-sm bg-black text-white rounded-lg"
+            >
+              Uredi radnika
+            </button>
+          </>
+        ) : (
+          <form onSubmit={handleUpdate} className="space-y-2">
+            <input
+              className="w-full border p-2 rounded"
+              value={firstName}
+              onChange={(e) => setFirstName(e.target.value)}
+              placeholder="Ime"
+              required
+            />
+            <input
+              className="w-full border p-2 rounded"
+              value={lastName}
+              onChange={(e) => setLastName(e.target.value)}
+              placeholder="Prezime"
+              required
+            />
+            <input
+              type="number"
+              className="w-full border p-2 rounded"
+              value={hourlyRate}
+              onChange={(e) => setHourlyRate(e.target.value)}
+              placeholder="Satnica"
+              required
+            />
+
+            <div className="flex gap-2">
+              <button className="flex-1 bg-black text-white p-2 rounded-lg">
+                Sačuvaj
+              </button>
+              <button
+                type="button"
+                onClick={() => setIsEditing(false)}
+                className="flex-1 bg-gray-300 p-2 rounded-lg"
+              >
+                Otkaži
+              </button>
+            </div>
+          </form>
+        )}
+      </div>
 
       {/* Filter po periodu */}
       <div className="flex gap-2 mb-4">

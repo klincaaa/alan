@@ -33,3 +33,28 @@ export async function GET(
 
   return NextResponse.json({ worker, entries })
 }
+
+export async function PUT(
+  req: Request,
+  context: { params: Promise<{ id: string }> }
+) {
+  try {
+    const { id } = await context.params
+    const body = await req.json()
+
+    const { first_name, last_name, hourly_rate } = body
+
+    await db.query(
+      "UPDATE workers SET first_name = ?, last_name = ?, hourly_rate = ? WHERE id = ?",
+      [first_name, last_name, hourly_rate, id]
+    )
+
+    return NextResponse.json({ success: true })
+  } catch (error) {
+    console.error(error)
+    return NextResponse.json(
+      { error: "Greška pri ažuriranju" },
+      { status: 500 }
+    )
+  }
+}
