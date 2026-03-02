@@ -280,7 +280,7 @@ export default function ProjectDetails() {
 
             <DatePicker
               selected={workDate}
-              onChange={(date: Date) => setWorkDate(date)}
+              onChange={(date: Date | null) => setWorkDate(date || new Date())}
               className="w-full border p-2 rounded"
               dateFormat="yyyy-MM-dd"
             />
